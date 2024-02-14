@@ -8,6 +8,7 @@ This module defines the following function(s):
     get_usempl_data()
     usempl_npp()
 """
+
 # Import packages
 import numpy as np
 import pandas as pd
@@ -121,7 +122,9 @@ def get_usempl_data(
                 skiprows=1,
                 na_values=[".", "na", "NaN"],
             )
-            usempl_df = pd.concat([usempl_ann_df, usempl_df], ignore_index=True)
+            usempl_df = pd.concat(
+                [usempl_ann_df, usempl_df], ignore_index=True
+            )
             usempl_df = usempl_df.sort_values(by="Date")
             usempl_df = usempl_df.reset_index(drop=True)
             usempl_df.to_csv(os.path.join(data_dir, filename), index=False)
@@ -132,15 +135,19 @@ def get_usempl_data(
                 columns=["Date"],
             )
             usempl_df = pd.merge(
-                usempl_df, months_df, left_on="Date", right_on="Date", how="outer"
+                usempl_df,
+                months_df,
+                left_on="Date",
+                right_on="Date",
+                how="outer",
             )
             usempl_df = usempl_df.sort_values(by="Date")
             usempl_df = usempl_df.reset_index(drop=True)
 
             # Insert cubic spline interpolation for missing PAYEMS values
-            usempl_df.loc[:242, "PAYEMS"] = (
-                usempl_df.loc[:242, "PAYEMS"].interpolate(method="cubic")
-            )
+            usempl_df.loc[:242, "PAYEMS"] = usempl_df.loc[
+                :242, "PAYEMS"
+            ].interpolate(method="cubic")
     else:
         # Import the data as pandas DataFrame
         end_date_str2 = end_date_str
@@ -209,13 +216,14 @@ def usempl_streaks(
     usempl_df, end_date_str2 = get_usempl_data(
         end_date_str=end_date_str,
         download_from_internet=download_from_internet,
-        include_annual_1919=include_annual_1919
+        include_annual_1919=include_annual_1919,
     )
 
     print("PAYEMS data downloaded on " + end_date_str + ":")
     print(
-        "    has start PAYEMS data month of " +
-        usempl_df.loc[0, "Date"].strftime("%Y-%m") + ","
+        "    has start PAYEMS data month of "
+        + usempl_df.loc[0, "Date"].strftime("%Y-%m")
+        + ","
     )
     print("    and end PAYEMS data month of " + end_date_str2 + ".")
 
@@ -238,13 +246,22 @@ def usempl_streaks(
             if strk_mths == 0:
                 j = i
                 strk_num += 1
-                strk_df = pd.DataFrame(columns=[
-                    "Date", "PAYEMS", "empl_mth_gain", "strk_mths", "strk_cum",
-                    "strk_mths_tot", "strk_avg_emp_gain", "strk_cum_tot"
-                ])
+                strk_df = pd.DataFrame(
+                    columns=[
+                        "Date",
+                        "PAYEMS",
+                        "empl_mth_gain",
+                        "strk_mths",
+                        "strk_cum",
+                        "strk_mths_tot",
+                        "strk_avg_emp_gain",
+                        "strk_cum_tot",
+                    ]
+                )
                 strk_start_mth_str = usempl_df.loc[i, "Date"].strftime("%Y-%m")
-            strk_df.loc[i - j, ["Date", "PAYEMS", "empl_mth_gain"]] = \
+            strk_df.loc[i - j, ["Date", "PAYEMS", "empl_mth_gain"]] = (
                 usempl_df.loc[i, ["Date", "PAYEMS", "empl_mth_gain"]]
+            )
             strk_mths += 1
             strk_df.loc[i - j, "strk_mths"] = strk_mths
             strk_cum += usempl_df.loc[i, "empl_mth_gain"]
@@ -265,9 +282,9 @@ def usempl_streaks(
                 min_mth_val_lst.append(strk_df["strk_mths"].min())
                 max_mth_val_lst.append(strk_df["strk_mths"].max())
         elif (
-            usempl_df.loc[i, "empl_mth_gain"] <= 0 and
-            usempl_df.loc[i - 1, "empl_mth_gain"] > 0 and
-            i > 0
+            usempl_df.loc[i, "empl_mth_gain"] <= 0
+            and usempl_df.loc[i - 1, "empl_mth_gain"] > 0
+            and i > 0
         ):
             strk_df["strk_mths_tot"] = strk_mths
             strk_df["strk_avg_emp_gain"] = strk_cum / strk_mths
@@ -290,8 +307,8 @@ def usempl_streaks(
 
     # Create Bokeh plot of PAYEMS normalized peak plot figure
     fig_title = (
-        "Consecutive US monthly employment gain streaks since " +
-        usempl_df.loc[0, "Date"].strftime("%Y")
+        "Consecutive US monthly employment gain streaks since "
+        + usempl_df.loc[0, "Date"].strftime("%Y")
     )
     filename = "usempl_streaks_" + end_date_str2 + ".html"
     output_file(os.path.join(image_dir, filename), title=fig_title)

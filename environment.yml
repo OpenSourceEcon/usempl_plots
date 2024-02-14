@@ -1,4 +1,6 @@
 name: usempl-plots-dev
+channels:
+- conda-forge
 dependencies:
   - python>=3.10.8
   - ipython
@@ -6,7 +8,7 @@ dependencies:
   - scipy>=1.9.3
   - pandas>=1.5.2
   - pandas-datareader>=0.10.0
-  - bokeh>=2.4.3, <3.0
+  - bokeh>=3.0
   - pytest>=7.1.2
   - coverage>=6.3.2
   - codecov>=2.1.11
